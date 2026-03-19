@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gestión de Trabajadores</title>
+
+  <!-- Bootstrap 5 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+  <!-- Font Awesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+
+  <!-- ============================================================
+       NAVBAR
+       ============================================================ -->
+  <nav class="navbar navbar-dark">
+    <div class="container-fluid px-4">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+        <i class="fa-solid fa-users-gear fs-5"></i>
+        <span class="fw-semibold">Gestión de Recursos Humanos</span>
+      </a>
+      <span class="navbar-text text-white-50 small d-none d-sm-block">
+        <i class="fa-regular fa-calendar me-1"></i>
+        <span id="currentDate"></span>
+      </span>
+    </div>
+  </nav>
+
+  <!-- ============================================================
+       MAIN CONTENT
+       ============================================================ -->
+  <main class="main-content">
+    <div class="container-xl py-4 px-3 px-md-4">
+
+      <!-- Page Header -->
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+        <div>
+          <h1 class="page-title mb-0">Trabajadores</h1>
+          <p class="text-muted small mb-0">Administra el personal de la empresa</p>
+        </div>
+        <button class="btn btn-primary d-flex align-items-center gap-2" id="btnNuevoTrabajador">
+          <i class="fa-solid fa-plus"></i>
+          <span>Nuevo Trabajador</span>
+        </button>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+          <div class="stat-card">
+            <div class="stat-icon bg-primary-soft text-primary">
+              <i class="fa-solid fa-users"></i>
+            </div>
+            <div>
+              <div class="stat-value" id="statTotal">--</div>
+              <div class="stat-label">Total</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-lg-3">
+          <div class="stat-card">
+            <div class="stat-icon bg-success-soft text-success">
+              <i class="fa-solid fa-user-check"></i>
+            </div>
+            <div>
+              <div class="stat-value" id="statActivos">--</div>
+              <div class="stat-label">Activos</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-lg-3">
+          <div class="stat-card">
+            <div class="stat-icon bg-danger-soft text-danger">
+              <i class="fa-solid fa-user-xmark"></i>
+            </div>
+            <div>
+              <div class="stat-value" id="statInactivos">--</div>
+              <div class="stat-label">Inactivos</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-lg-3">
+          <div class="stat-card">
+            <div class="stat-icon bg-warning-soft text-warning">
+              <i class="fa-solid fa-diagram-project"></i>
+            </div>
+            <div>
+              <div class="stat-value" id="statProyectos">--</div>
+              <div class="stat-label">Proyectos</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table Card -->
+      <div class="card shadow-sm">
+
+        <!-- Filters Header -->
+        <div class="card-header bg-white border-bottom py-3">
+          <div class="row g-2 align-items-center">
+            <div class="col-sm-6 col-lg-5">
+              <div class="input-group search-group">
+                <span class="input-group-text bg-white border-end-0">
+                  <i class="fa-solid fa-magnifying-glass text-muted"></i>
+                </span>
+                <input
+                  type="text"
+                  class="form-control border-start-0 ps-0"
+                  id="searchInput"
+                  placeholder="Buscar por nombre, cargo o proyecto..."
+                  autocomplete="off"
+                />
+              </div>
+            </div>
+            <div class="col-sm-4 col-lg-3">
+              <select class="form-select" id="filtroEstado">
+                <option value="">Todos los estados</option>
+                <option value="1">Activos</option>
+                <option value="0">Inactivos</option>
+              </select>
+            </div>
+            <div class="col-sm-2 col-lg-4 d-flex justify-content-sm-end">
+              <button class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1" id="btnRefrescar" title="Refrescar">
+                <i class="fa-solid fa-arrows-rotate"></i>
+                <span class="d-none d-lg-inline">Refrescar</span>
+              </button>
+            </div>
+          </div>
+          <div class="mt-2">
+            <small class="text-muted">
+              Mostrando <strong id="countShowing">0</strong> de <strong id="countTotal">0</strong> registros
+            </small>
+          </div>
+        </div>
+
+        <!-- Table Body -->
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="tablaTrabajadores">
+              <thead>
+                <tr>
+                  <th class="ps-4" style="width:50px">#</th>
+                  <th>Nombre</th>
+                  <th>Cargo</th>
+                  <th>Proyecto</th>
+                  <th>Estado</th>
+                  <th class="text-center" style="width:160px">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyTrabajadores">
+                <!-- Rows injected by JS -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Loading State -->
+          <div id="loadingState" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="text-muted mt-2 small mb-0">Cargando trabajadores...</p>
+          </div>
+
+          <!-- Empty State -->
+          <div id="emptyState" class="text-center py-5 d-none">
+            <div class="empty-icon mb-3">
+              <i class="fa-solid fa-users-slash fa-3x text-muted opacity-50"></i>
+            </div>
+            <h6 class="text-muted fw-semibold">No se encontraron trabajadores</h6>
+            <p class="text-muted small mb-0">Ajusta los filtros o registra un nuevo trabajador.</p>
+          </div>
+        </div>
+
+        <!-- Pagination Footer -->
+        <div class="card-footer bg-white border-top py-2 d-flex flex-wrap justify-content-between align-items-center gap-2" id="paginationFooter">
+          <div class="text-muted small">
+            Página <span id="currentPage">1</span> de <span id="totalPages">1</span>
+          </div>
+          <nav aria-label="Paginación">
+            <ul class="pagination pagination-sm mb-0" id="paginationList"></ul>
+          </nav>
+        </div>
+
+      </div><!-- /card -->
+    </div><!-- /container -->
+  </main>
+
+  <!-- ============================================================
+       MODAL: CREAR / EDITAR TRABAJADOR
+       ============================================================ -->
+  <div class="modal fade" id="modalTrabajador" tabindex="-1"
+       aria-labelledby="modalTrabajadorLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalTrabajadorLabel">
+            <i class="fa-solid fa-user-plus me-2"></i>Registrar Trabajador
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+
+        <div class="modal-body">
+          <form id="formTrabajador" novalidate>
+            <input type="hidden" id="trabajadorId" />
+
+            <div class="row g-3">
+
+              <!-- Nombre -->
+              <div class="col-md-6">
+                <label for="inputNombre" class="form-label fw-medium">
+                  Nombre <span class="text-danger">*</span>
+                </label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="inputNombre"
+                  name="nombre"
+                  placeholder="Ingresa el nombre"
+                  maxlength="100"
+                />
+                <div class="invalid-feedback">El nombre es obligatorio.</div>
+              </div>
+
+              <!-- Apellido -->
+              <div class="col-md-6">
+                <label for="inputApellido" class="form-label fw-medium">
+                  Apellido <span class="text-danger">*</span>
+                </label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="inputApellido"
+                  name="apellido"
+                  placeholder="Ingresa el apellido"
+                  maxlength="100"
+                />
+                <div class="invalid-feedback">El apellido es obligatorio.</div>
+              </div>
+
+              <!-- DNI -->
+              <div class="col-md-6">
+                <label for="inputDni" class="form-label fw-medium">
+                  DNI <span class="text-danger">*</span>
+                </label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="inputDni"
+                  name="dni"
+                  placeholder="12345678"
+                  maxlength="8"
+                  inputmode="numeric"
+                />
+                <div class="invalid-feedback">El DNI debe tener exactamente 8 dígitos numéricos.</div>
+              </div>
+
+              <!-- Email -->
+              <div class="col-md-6">
+                <label for="inputEmail" class="form-label fw-medium">
+                  Correo electrónico <span class="text-danger">*</span>
+                </label>
+                <input
+                  type="email"
+                  class="form-control"
+                  id="inputEmail"
+                  name="email"
+                  placeholder="ejemplo@empresa.com"
+                  maxlength="150"
+                />
+                <div class="invalid-feedback">Ingresa un correo electrónico válido.</div>
+              </div>
+
+              <!-- Teléfono -->
+              <div class="col-md-6">
+                <label for="inputTelefono" class="form-label fw-medium">
+                  Teléfono <span class="text-muted fw-normal">(opcional)</span>
+                </label>
+                <input
+                  type="tel"
+                  class="form-control"
+                  id="inputTelefono"
+                  name="telefono"
+                  placeholder="+51 999 999 999"
+                  maxlength="20"
+                />
+              </div>
+
+              <!-- Cargo -->
+              <div class="col-md-6">
+                <label for="selectCargo" class="form-label fw-medium">
+                  Cargo <span class="text-danger">*</span>
+                </label>
+                <select class="form-select" id="selectCargo" name="cargo_id">
+                  <option value="">Seleccionar cargo...</option>
+                </select>
+                <div class="invalid-feedback">Selecciona un cargo.</div>
+              </div>
+
+              <!-- Proyecto -->
+              <div class="col-md-6">
+                <label for="selectProyecto" class="form-label fw-medium">
+                  Proyecto <span class="text-danger">*</span>
+                </label>
+                <select class="form-select" id="selectProyecto" name="proyecto_id">
+                  <option value="">Seleccionar proyecto...</option>
+                </select>
+                <div class="invalid-feedback">Selecciona un proyecto.</div>
+              </div>
+
+            </div><!-- /row -->
+
+            <p class="text-muted small mt-3 mb-0">
+              <span class="text-danger">*</span> Campos obligatorios
+            </p>
+          </form>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="fa-solid fa-xmark me-1"></i>Cancelar
+          </button>
+          <button type="button" class="btn btn-primary" id="btnGuardarTrabajador">
+            <span class="spinner-border spinner-border-sm d-none me-1" id="spinnerGuardar" role="status"></span>
+            <i class="fa-solid fa-floppy-disk me-1" id="iconGuardar"></i>
+            Guardar
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       MODAL: DETALLE DEL TRABAJADOR
+       ============================================================ -->
+  <div class="modal fade" id="modalDetalle" tabindex="-1"
+       aria-labelledby="modalDetalleLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalDetalleLabel">
+            <i class="fa-solid fa-circle-info me-2"></i>Detalle del Trabajador
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+
+        <div class="modal-body" id="modalDetalleBody">
+          <!-- Content injected by JS -->
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       MODAL: CONFIRMACIÓN DE ACCIÓN
+       ============================================================ -->
+  <div class="modal fade" id="modalConfirmar" tabindex="-1"
+       aria-labelledby="modalConfirmarLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:420px">
+      <div class="modal-content">
+
+        <div class="modal-header border-0 pb-0">
+          <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+
+        <div class="modal-body text-center pt-0 pb-1">
+          <div class="confirm-icon mb-3" id="confirmarIcono">
+            <i class="fa-solid fa-triangle-exclamation fa-3x text-danger"></i>
+          </div>
+          <h5 class="fw-semibold mb-1" id="confirmarTitulo">¿Desactivar trabajador?</h5>
+          <p class="text-muted" id="confirmarMensaje">
+            Esta acción desactivará al trabajador. Podrás reactivarlo cuando lo necesites.
+          </p>
+        </div>
+
+        <div class="modal-footer border-0 justify-content-center pb-4">
+          <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-danger px-4" id="btnConfirmarAccion">
+            <span class="spinner-border spinner-border-sm d-none me-1" id="spinnerConfirmar" role="status"></span>
+            <span id="textConfirmarAccion">Desactivar</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       TOAST CONTAINER
+       ============================================================ -->
+  <div class="toast-container position-fixed top-0 end-0 p-3" id="toastContainer"
+       style="z-index: 1100;"></div>
+
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Custom JS (order matters) -->
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/utils.js"></script>
+  <script src="assets/js/trabajadores.js"></script>
+
+</body>
+</html>
