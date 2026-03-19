@@ -68,21 +68,7 @@ front/
 
 ## Instrucciones de ejecución
 
-### 1. Configurar la base de datos
-
-**Opción A — Terminal:**
-```bash
-mysql -u root -p < sql/schema.sql
-```
-
-**Opción B — phpMyAdmin / MySQL Workbench:**
-Importar el archivo `sql/schema.sql` desde la interfaz gráfica.
-
-El script crea la base de datos `gestion_rrhh`, las tablas `cargos`, `proyectos` y `trabajadores`, e inserta datos de prueba.
-
----
-
-### 2. Levantar el backend
+### 1. Levantar el backend
 
 Asegúrate de que tu servidor API esté corriendo. Por defecto se espera en:
 
@@ -103,7 +89,7 @@ const CONFIG = Object.freeze({
 
 ---
 
-### 3. Abrir el frontend
+### 2. Abrir el frontend
 
 El frontend es HTML estático. Ábrelo con cualquier servidor local:
 
