@@ -293,6 +293,12 @@ const TrabajadoresModule = (() => {
    * MODAL: EDITAR TRABAJADOR
    * ==================================================================== */
   function _openEditModal(id) {
+    const t = _trabajadores.find(w => String(w.id) === String(id));
+    if (!t) {
+      Utils.showToast('error', 'No se encontró el trabajador.');
+      return;
+    }
+
     _currentId = id;
     $('#modalTrabajadorLabel').html(
       '<i class="fa-solid fa-pen-to-square me-2"></i>Editar Trabajador'
@@ -301,49 +307,28 @@ const TrabajadoresModule = (() => {
     _populateSelects();
     _resetForm();
 
-    API.trabajadores.getById(id)
-      .done((res) => {
-        const t = res.data ?? res;
-        $('#trabajadorId').val(t.id);
-        $('#inputNombre').val(t.nombre   ?? '');
-        $('#inputApellido').val(t.apellido ?? '');
-        $('#inputDni').val(t.dni           ?? '');
-        $('#inputEmail').val(t.email       ?? '');
-        $('#inputTelefono').val(t.telefono ?? '');
-        $('#selectCargo').val(t.cargo_id ?? '');
-        $('#selectProyecto').val(t.proyecto_id ?? '');
-        modalTrabajador.show();
-      })
-      .fail(() => {
-        Utils.showToast('error', 'No se pudo cargar la información del trabajador.');
-      });
+    $('#trabajadorId').val(t.id);
+    $('#inputNombre').val(t.nombre    ?? '');
+    $('#inputApellido').val(t.apellido ?? '');
+    $('#inputDni').val(t.dni           ?? '');
+    $('#inputEmail').val(t.email       ?? '');
+    $('#inputTelefono').val(t.telefono ?? '');
+    $('#selectCargo').val(t.cargo_id   ?? '');
+    $('#selectProyecto').val(t.proyecto_id ?? '');
+    modalTrabajador.show();
   }
 
   /* ====================================================================
    * MODAL: DETALLE TRABAJADOR
    * ==================================================================== */
   function _openDetailModal(id) {
-    // Mostrar modal con spinner mientras carga
-    $('#modalDetalleBody').html(`
-      <div class="text-center py-4">
-        <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden">Cargando...</span>
-        </div>
-      </div>`);
+    const t = _trabajadores.find(w => String(w.id) === String(id));
+    if (!t) {
+      Utils.showToast('error', 'No se encontró el trabajador.');
+      return;
+    }
+    $('#modalDetalleBody').html(_buildDetailHtml(t));
     modalDetalle.show();
-
-    API.trabajadores.getById(id)
-      .done((res) => {
-        const t = res.data ?? res;
-        $('#modalDetalleBody').html(_buildDetailHtml(t));
-      })
-      .fail(() => {
-        $('#modalDetalleBody').html(
-          '<p class="text-danger text-center py-3">' +
-          '<i class="fa-solid fa-triangle-exclamation me-1"></i>' +
-          'No se pudo cargar el detalle del trabajador.</p>'
-        );
-      });
   }
 
   /** Construye el HTML del cuerpo del modal de detalle */
